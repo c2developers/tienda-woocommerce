@@ -1,0 +1,53 @@
+/*
+Theme Name: Tostela
+Theme URI: https://github.com/c2developers/tienda-woocommerce
+Description: Tema hijo de Twenty Twenty-Five para una tienda de café de especialidad con WooCommerce. Todo el diseño está en theme.json.
+Author: C2 Developers
+Template: twentytwentyfive
+Version: 1.0.0
+Requires at least: 6.7
+License: GPL-2.0-or-later
+Text Domain: tostela
+*/
+
+/* Etiquetas pequeñas en versalitas sobre los titulares */
+.etiqueta { text-transform: uppercase; letter-spacing: 0.14em; font-weight: 600; }
+
+/* Cabecera que se queda arriba al bajar */
+header.wp-block-template-part { position: sticky; top: 0; z-index: 50; }
+.admin-bar header.wp-block-template-part { top: var(--wp-admin--admin-bar--height, 32px); }
+
+/* Portada: el texto entra suave */
+.hero .wp-block-cover__inner-container > * { animation: entra 0.9s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes entra { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+
+/* Tarjetas de producto */
+.tarjetas .wc-block-components-product-image img,
+.wc-block-product-template .wc-block-components-product-image img { border-radius: 16px; transition: transform .6s cubic-bezier(.2,.7,.2,1); background: var(--wp--preset--color--muted); }
+.tarjetas li:hover .wc-block-components-product-image img,
+.wc-block-product-template li:hover .wc-block-components-product-image img { transform: scale(1.03); }
+.wc-block-components-product-image { overflow: hidden; border-radius: 16px; }
+.wp-block-post-terms a { text-decoration: none; color: var(--wp--preset--color--accent-2); }
+
+/* Imágenes con esquinas suaves */
+.historia img { border-radius: 22px; }
+
+/* Listas de enlaces del pie, sin viñetas */
+.enlaces { list-style: none; padding-left: 0; }
+.enlaces a { color: #d9cbb8; text-decoration: none; }
+.enlaces a:hover { color: var(--wp--preset--color--base-2); }
+.pie .wp-block-site-title a { color: var(--wp--preset--color--base-2); text-decoration: none; }
+.wp-block-site-title a { text-decoration: none; }
+.wp-block-navigation a { text-decoration: none; }
+
+/* Ficha del café: notas de cata en píldoras y tabla de origen */
+.notas { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.25rem; }
+.nota { padding: 0.35rem 0.85rem; border: 1px solid var(--wp--preset--color--line); border-radius: 999px; background: var(--wp--preset--color--base-2); font-size: 0.875rem; font-weight: 500; }
+table.ficha { width: 100%; max-width: 560px; border-collapse: collapse; margin: 1.5rem 0; font-size: 0.9375rem; }
+table.ficha th, table.ficha td { text-align: left; padding: 0.7rem 0; border-bottom: 1px solid var(--wp--preset--color--line); vertical-align: top; }
+table.ficha th { width: 34%; color: var(--wp--preset--color--contrast-2); font-weight: 500; }
+.woocommerce-Tabs-panel--description > h2 { display: none; }
+.wp-block-woocommerce-product-meta { display: none; }
+.woocommerce-price-suffix { font-size: 0.8em; font-weight: 400; color: var(--wp--preset--color--contrast-2); }
+.wp-block-post-terms { margin-top: 0.9rem; }
+.aviso-ejemplo { padding: 0.9rem 1.1rem; border-radius: 12px; background: var(--wp--preset--color--muted); }

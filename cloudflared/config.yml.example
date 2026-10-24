@@ -1,0 +1,7 @@
+# Copia a cloudflared/config.yml y pon el ID de tu túnel (cloudflared tunnel create …).
+tunnel: ID-DEL-TUNEL
+credentials-file: /etc/cloudflared/credenciales.json
+ingress:
+  - hostname: tienda.tudominio.com
+    service: http://wordpress:80
+  - service: http_status:404

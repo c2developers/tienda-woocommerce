@@ -1,0 +1,98 @@
+# Una tienda WooCommerce completa en tu ordenador:
+#   db           MariaDB, la base de datos
+#   wordpress    WordPress + WooCommerce (Apache + PHP 8.3)
+#   wpcli        wp-cli, para configurarlo todo desde la terminal (perfil «cli»)
+#   cloudflared  el túnel de Cloudflare: publica la tienda con HTTPS en tu dominio
+# Todo lo variable (contraseñas, dominio, claves) va en .env, que NO se sube a git.
+name: tienda
+
+x-wp: &wp
+  WORDPRESS_DB_HOST: db
+  WORDPRESS_DB_USER: wordpress
+  WORDPRESS_DB_PASSWORD: ${DB_PASSWORD}
+  WORDPRESS_DB_NAME: wordpress
+  RESEND_API_KEY: ${RESEND_API_KEY}
+  CORREO_REMITENTE: ${CORREO_REMITENTE}
+  TIENDA_NOMBRE: ${TIENDA_NOMBRE}
+  WORDPRESS_CONFIG_EXTRA: |
+    define('WP_HOME', '${SITIO_URL}');
+    define('WP_SITEURL', '${SITIO_URL}');
+    // Detrás del túnel llega por HTTP, pero el visitante usa HTTPS: lo decimos.
+    if (($$_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https') { $$_SERVER['HTTPS'] = 'on'; }
+    define('WP_ENVIRONMENT_TYPE', 'production');
+    define('DISALLOW_FILE_EDIT', true);
+    define('WP_MEMORY_LIMIT', '256M');
+    // Correo por Resend con el conector nativo de WP Mail SMTP: la clave sale de .env, nunca de la base de datos.
+    define('WPMS_ON', true);
+    define('WPMS_MAILER', 'resend');
+    define('WPMS_RESEND_API_KEY', getenv('RESEND_API_KEY'));
+    define('WPMS_MAIL_FROM', getenv('CORREO_REMITENTE'));
+    define('WPMS_MAIL_FROM_FORCE', true);
+    define('WPMS_MAIL_FROM_NAME', getenv('TIENDA_NOMBRE'));
+    define('WPMS_MAIL_FROM_NAME_FORCE', true);
+
+services:
+  db:
+    image: mariadb:11.4
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: wordpress
+      MARIADB_USER: wordpress
+      MARIADB_PASSWORD: ${DB_PASSWORD}
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    volumes:
+      - db:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  wordpress:
+    image: wordpress:7.1.3-php8.3-apache
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${PUERTO:-8080}:80"
+    environment: *wp
+    volumes:
+      - wp:/var/www/html
+      - ./tema:/var/www/html/wp-content/themes/${TEMA}:ro
+      - ./php.ini:/usr/local/etc/php/conf.d/tienda.ini:ro
+
+  wpcli:
+    image: wordpress:cli-php8.3
+    profiles: [cli]
+    user: "33:33"
+    depends_on:
+      - wordpress
+    environment:
+      <<: *wp
+      HOME: /tmp
+      WP_CLI_CACHE_DIR: /tmp/wp-cli-cache
+      TIENDA_DIRECCION: ${TIENDA_DIRECCION}
+      TIENDA_CIUDAD: ${TIENDA_CIUDAD}
+      TIENDA_CP: ${TIENDA_CP}
+      IVA_CAFE: ${IVA_CAFE}
+    volumes:
+      - wp:/var/www/html
+      - ./tema:/var/www/html/wp-content/themes/${TEMA}:ro
+      - ./scripts:/scripts:ro
+      - ./contenido:/contenido:ro
+      - ./assets:/assets:ro
+
+  cloudflared:
+    image: cloudflare/cloudflared:2026.8.3
+    restart: unless-stopped
+    profiles: [tunel]
+    command: tunnel --no-autoupdate --config /etc/cloudflared/config.yml run
+    volumes:
+      - ./cloudflared:/etc/cloudflared:ro
+    depends_on:
+      - wordpress
+
+volumes:
+  db:
+  wp:

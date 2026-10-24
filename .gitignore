@@ -1,0 +1,8 @@
+# Secretos y datos locales: nunca a git
+.env
+cloudflared/*.json
+cloudflared/config.yml
+copias/
+# Imágenes en bruto que devuelve el modelo (las buenas van en assets/img)
+assets/img/bruto/
+node_modules/
