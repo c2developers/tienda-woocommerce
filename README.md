@@ -37,10 +37,15 @@ docker compose --profile tunel up -d cloudflared
 python3 scripts/imagenes.py          # las fotos con IA (necesita GEMINI_API_KEY)
 ./scripts/wp.sh eval-file /scripts/productos.php   # el catálogo
 ./scripts/wp.sh eval-file /scripts/paginas.php     # páginas y textos legales
+./scripts/wp.sh eval-file /scripts/cookies.php     # aviso de cookies en español y Consent Mode v2
 ```
 
 Después, en el escritorio de WordPress: conecta Stripe (WooCommerce → Ajustes → Pagos), Site Kit y Meta for
-WooCommerce, y configura el aviso de cookies (CookieYes) con Consent Mode.
+WooCommerce. El aviso de cookies (CookieYes) pasa la decisión del visitante a Site Kit por WP Consent API:
+así Google Analytics funciona con Consent Mode v2 y no mide a nadie que no haya aceptado.
+
+> Ojo con el IVA: con WooCommerce en español, la clase de «tarifa reducida» no se llama `reduced-rate`. Por eso el
+> café usa una clase propia, «IVA reducido» (10 %), que crea `scripts/configurar.php`.
 
 ## Qué hay en cada sitio
 
@@ -49,6 +54,8 @@ WooCommerce, y configura el aviso de cookies (CookieYes) con Consent Mode.
 | `docker-compose.yml` | Los servicios: base de datos, WordPress, wp-cli y el túnel |
 | `scripts/instalar.sh` | Instala y configura WordPress y WooCommerce desde la terminal |
 | `scripts/configurar.php`, `envios.php` | Moneda, IVA, envíos y correos de WooCommerce |
+| `scripts/cookies.php` | Aviso de cookies en español, con los colores de la tienda, y Consent Mode v2 |
+| `scripts/copia.sh` | Copia de seguridad de la base de datos y de las imágenes |
 | `scripts/productos.php` + `contenido/productos.json` | El catálogo |
 | `scripts/imagenes.py` + `contenido/imagenes.json` | Las fotos, generadas con Gemini |
 | `tema/` | El tema hijo: `theme.json`, cabecera, pie, portada y patrones |

@@ -48,10 +48,22 @@ $opciones = [
 foreach ( $opciones as $k => $v ) { update_option( $k, $v ); }
 WP_CLI::log( sprintf( '%d ajustes de WooCommerce', count( $opciones ) ) );
 
-// IVA: 21 % general (accesorios y envío) y reducido para el café.
+// IVA: 21 % general (accesorios y envío) y una clase propia, «IVA reducido», para el café.
+// (No uso «reduced-rate»: con WooCommerce en español esa clase se llama «tarifa-reducida».)
 $iva_cafe = (float) ( $e( 'IVA_CAFE' ) ?: 10 );
-if ( ! WC_Tax::get_rates_for_tax_class( '' ) ) {
+if ( ! in_array( 'iva-reducido', WC_Tax::get_tax_class_slugs(), true ) ) {
+	WC_Tax::create_tax_class( 'IVA reducido', 'iva-reducido' );
+}
+global $wpdb;
+$hay = fn( $clase ) => (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_class = %s", $clase ) );
+if ( ! $hay( '' ) ) {
 	WC_Tax::_insert_tax_rate( [ 'tax_rate_country' => 'ES', 'tax_rate' => '21.0000', 'tax_rate_name' => 'IVA', 'tax_rate_priority' => 1, 'tax_rate_shipping' => 1, 'tax_rate_class' => '' ] );
-	WC_Tax::_insert_tax_rate( [ 'tax_rate_country' => 'ES', 'tax_rate' => number_format( $iva_cafe, 4, '.', '' ), 'tax_rate_name' => 'IVA', 'tax_rate_priority' => 1, 'tax_rate_shipping' => 0, 'tax_rate_class' => 'reduced-rate' ] );
+}
+if ( ! $hay( 'iva-reducido' ) ) {
+	WC_Tax::_insert_tax_rate( [ 'tax_rate_country' => 'ES', 'tax_rate' => number_format( $iva_cafe, 4, '.', '' ), 'tax_rate_name' => 'IVA', 'tax_rate_priority' => 1, 'tax_rate_shipping' => 0, 'tax_rate_class' => 'iva-reducido' ] );
+}
+// Restos de una versión anterior: en la clase estándar solo va el 21 %.
+foreach ( $wpdb->get_results( "SELECT tax_rate_id FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_class = '' AND tax_rate <> '21.0000'" ) as $r ) {
+	WC_Tax::_delete_tax_rate( $r->tax_rate_id );
 }
 WP_CLI::log( "IVA: 21 % general y $iva_cafe % para el café" );

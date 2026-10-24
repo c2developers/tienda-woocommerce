@@ -56,7 +56,12 @@ function descripcion( $p ) {
 
 $n = 0;
 foreach ( $d['cafes'] as $orden => $p ) {
-	if ( wc_get_product_id_by_sku( $p['sku'] ) ) { continue; }
+	if ( $existe = wc_get_product_id_by_sku( $p['sku'] ) ) {
+		// Ya existe: solo se asegura la clase de IVA del café.
+		$ya = wc_get_product( $existe );
+		if ( $ya->get_tax_class() !== 'iva-reducido' ) { $ya->set_tax_class( 'iva-reducido' ); $ya->save(); }
+		continue;
+	}
 	$prod = new WC_Product_Variable();
 	$prod->set_name( $p['nombre'] );
 	$prod->set_sku( $p['sku'] );
@@ -64,7 +69,7 @@ foreach ( $d['cafes'] as $orden => $p ) {
 	$prod->set_description( descripcion( $p ) );
 	$prod->set_category_ids( [ $cat['cafes'] ] );
 	$prod->set_featured( $p['destacado'] );
-	$prod->set_tax_class( 'reduced-rate' );
+	$prod->set_tax_class( 'iva-reducido' );
 	$prod->set_menu_order( $orden );
 	$prod->set_image_id( foto( $p['imagen'], $p['nombre'] ) );
 

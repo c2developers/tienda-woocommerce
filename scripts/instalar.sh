@@ -32,7 +32,7 @@ wp post delete 1 2 --force 2>/dev/null || true
 wp plugin delete akismet hello 2>/dev/null || true
 
 paso "Plugins: todos gratuitos, del directorio oficial de WordPress"
-PLUGINS="woocommerce woocommerce-gateway-stripe wp-mail-smtp google-site-kit facebook-for-woocommerce cookie-law-info"
+PLUGINS="woocommerce woocommerce-gateway-stripe wp-mail-smtp google-site-kit facebook-for-woocommerce cookie-law-info wp-consent-api"
 wp plugin install $PLUGINS
 wp language plugin install --all es_ES   # antes de activar: así WooCommerce crea sus páginas en español
 wp plugin activate $PLUGINS
