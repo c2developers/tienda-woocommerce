@@ -55,3 +55,14 @@ add_filter( 'woocommerce_package_rates', function ( $tarifas ) {
 	$gratis = array_filter( $tarifas, fn( $t ) => 'free_shipping' === $t->get_method_id() );
 	return $gratis ?: $tarifas;
 }, 100 );
+
+// Consent Mode: Google espera hasta 2 s a que el aviso de cookies diga qué eligió el visitante antes de enviar
+// la visita (con 500 ms, en cada página nueva la visita salía como «denegada» aunque ya hubiera aceptado).
+add_filter( 'googlesitekit_consent_defaults', function ( $d ) {
+	$d['wait_for_update'] = 2000;
+	return $d;
+} );
+
+// WP Consent API necesita saber el modelo de consentimiento desde el principio: en la UE, «optin»
+// (nada hasta que el visitante acepta). CookieYes solo lo dice al pulsar un botón; así vale en todas las páginas.
+add_filter( 'wp_get_consent_type', fn() => 'optin' );
