@@ -15,8 +15,10 @@ x-wp: &wp
   CORREO_REMITENTE: ${CORREO_REMITENTE}
   TIENDA_NOMBRE: ${TIENDA_NOMBRE}
   WORDPRESS_CONFIG_EXTRA: |
-    define('WP_HOME', '${SITIO_URL}');
-    define('WP_SITEURL', '${SITIO_URL}');
+    // Desde el propio ordenador (http://localhost:PUERTO) responde en local: ahí se prueban los pagos.
+    $$local = in_array($$_SERVER['HTTP_HOST'] ?? '', ['localhost:${PUERTO:-8080}', '127.0.0.1:${PUERTO:-8080}'], true);
+    define('WP_HOME', $$local ? 'http://localhost:${PUERTO:-8080}' : '${SITIO_URL}');
+    define('WP_SITEURL', $$local ? 'http://localhost:${PUERTO:-8080}' : '${SITIO_URL}');
     // Detrás del túnel llega por HTTP, pero el visitante usa HTTPS: lo decimos.
     if (($$_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https') { $$_SERVER['HTTPS'] = 'on'; }
     define('WP_ENVIRONMENT_TYPE', 'production');

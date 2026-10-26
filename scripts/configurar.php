@@ -28,6 +28,8 @@ $opciones = [
 	'woocommerce_tax_display_cart'          => 'incl',
 	'woocommerce_tax_based_on'              => 'base',
 	'woocommerce_tax_total_display'         => 'itemized',
+	// El envío lleva el IVA de lo que se envía (10 % con café, 21 % con accesorios)
+	'woocommerce_shipping_tax_class'        => 'inherit',
 	// Comprar sin cuenta, y sin el asistente ni el modo «próximamente»
 	'woocommerce_enable_guest_checkout'     => 'yes',
 	'woocommerce_price_display_suffix'      => 'IVA incluido',
@@ -60,8 +62,9 @@ if ( ! $hay( '' ) ) {
 	WC_Tax::_insert_tax_rate( [ 'tax_rate_country' => 'ES', 'tax_rate' => '21.0000', 'tax_rate_name' => 'IVA', 'tax_rate_priority' => 1, 'tax_rate_shipping' => 1, 'tax_rate_class' => '' ] );
 }
 if ( ! $hay( 'iva-reducido' ) ) {
-	WC_Tax::_insert_tax_rate( [ 'tax_rate_country' => 'ES', 'tax_rate' => number_format( $iva_cafe, 4, '.', '' ), 'tax_rate_name' => 'IVA', 'tax_rate_priority' => 1, 'tax_rate_shipping' => 0, 'tax_rate_class' => 'iva-reducido' ] );
+	WC_Tax::_insert_tax_rate( [ 'tax_rate_country' => 'ES', 'tax_rate' => number_format( $iva_cafe, 4, '.', '' ), 'tax_rate_name' => 'IVA', 'tax_rate_priority' => 1, 'tax_rate_shipping' => 1, 'tax_rate_class' => 'iva-reducido' ] );
 }
+$wpdb->update( "{$wpdb->prefix}woocommerce_tax_rates", [ 'tax_rate_shipping' => 1 ], [ 'tax_rate_class' => 'iva-reducido' ] );
 // Restos de una versión anterior: en la clase estándar solo va el 21 %.
 foreach ( $wpdb->get_results( "SELECT tax_rate_id FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_class = '' AND tax_rate <> '21.0000'" ) as $r ) {
 	WC_Tax::_delete_tax_rate( $r->tax_rate_id );
